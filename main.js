@@ -4,6 +4,7 @@ let gl;                         // The webgl context.
 let surface;                    // A surface model
 let shProgram;                  // A shader program
 let spaceball;                  // A SimpleRotator object that lets the user rotate the view by mouse.
+let N = 20;                     // splines count
 
 function deg2rad(angle) {
     return angle * Math.PI / 180;
@@ -90,9 +91,19 @@ function CreateSurfaceData()
 {
     let vertexList = [];
 
-    for (let i=0; i<360; i+=5) {
-        vertexList.push( Math.sin(deg2rad(i)), 1, Math.cos(deg2rad(i)) );
-        vertexList.push( Math.sin(deg2rad(i)), 0, Math.cos(deg2rad(i)) );
+    let a = 0.5;
+    let b = 1;
+
+    let vStep = 360/N;
+    let uStep = 90/N;
+    for (let u=0; u<180; u+=uStep) {
+        for (let v=0; v<360; v+=vStep) {
+            vertexList.push(
+                a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.cos(deg2rad(v)),
+                a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.sin(deg2rad(v)),
+                Math.cos(deg2rad(u))
+            );
+        }
     }
 
     return vertexList;
