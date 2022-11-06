@@ -31,8 +31,8 @@ function Model(name) {
         gl.vertexAttribPointer(shProgram.iAttribVertex, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(shProgram.iAttribVertex);
    
-        for(let i = 0; i <= N; i++){
-            gl.drawArrays(gl.LINE_STRIP, i*N, N+1);
+        for(let i = 0; i <= (N+1)*2; i++){
+            gl.drawArrays(gl.LINE_STRIP, i*N, N);
         }
     }
 }
@@ -92,14 +92,23 @@ function draw() {
 function CreateSurfaceData()
 {
     let vertexList = [];
-
     let a = 0.5;
     let b = 1;
 
-    let vStep = 360/N;
-    let uStep = 180/N;
+    let vStep = 360/(N-1);
+    let uStep = 180/(N-1);
     for (let u=0; u<=180; u+=uStep) {
         for (let v=0; v<=360; v+=vStep) {
+            vertexList.push(
+                a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.cos(deg2rad(v)),
+                a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.sin(deg2rad(v)),
+                Math.cos(deg2rad(u))
+            );
+        }
+    }
+
+    for (let v=0; v<=360; v+=vStep) {
+        for (let u=0; u<=180; u+=uStep) {
             vertexList.push(
                 a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.cos(deg2rad(v)),
                 a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.sin(deg2rad(v)),
