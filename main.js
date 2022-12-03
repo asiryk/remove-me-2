@@ -31,9 +31,7 @@ function Model(name) {
         gl.vertexAttribPointer(shProgram.iAttribVertex, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(shProgram.iAttribVertex);
    
-        for(let i = 0; i <= (N+1)*2; i++){
-            gl.drawArrays(gl.LINE_STRIP, i*N, N);
-        }
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.count);
     }
 }
 
@@ -97,25 +95,54 @@ function CreateSurfaceData()
 
     let vStep = 360/(N-1);
     let uStep = 180/(N-1);
+
     for (let u=0; u<=180; u+=uStep) {
         for (let v=0; v<=360; v+=vStep) {
+            //1
             vertexList.push(
                 a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.cos(deg2rad(v)),
                 a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.sin(deg2rad(v)),
                 Math.cos(deg2rad(u))
+            );
+
+            //2
+            vertexList.push(
+                a*(b - Math.cos(deg2rad(u+uStep)))*Math.sin(deg2rad(u+uStep))*Math.cos(deg2rad(v+vStep)),
+                a*(b - Math.cos(deg2rad(u+uStep)))*Math.sin(deg2rad(u+uStep))*Math.sin(deg2rad(v+vStep)),
+                Math.cos(deg2rad(u+uStep))
+            );
+
+            //3
+            vertexList.push(
+                a*(b - Math.cos(deg2rad(u+uStep)))*Math.sin(deg2rad(u+uStep))*Math.cos(deg2rad(v)),
+                a*(b - Math.cos(deg2rad(u+uStep)))*Math.sin(deg2rad(u+uStep))*Math.sin(deg2rad(v)),
+                Math.cos(deg2rad(u+uStep))
+            );
+
+            //4
+            vertexList.push(
+                a*(b - Math.cos(deg2rad(u+2*uStep)))*Math.sin(deg2rad(u+2*uStep))*Math.cos(deg2rad(v+vStep)),
+                a*(b - Math.cos(deg2rad(u+2*uStep)))*Math.sin(deg2rad(u+2*uStep))*Math.sin(deg2rad(v+vStep)),
+                Math.cos(deg2rad(u+2*uStep))
+            );
+
+            //5
+            vertexList.push(
+                a*(b - Math.cos(deg2rad(u+3*uStep)))*Math.sin(deg2rad(u+3*uStep))*Math.cos(deg2rad(v)),
+                a*(b - Math.cos(deg2rad(u+3*uStep)))*Math.sin(deg2rad(u+3*uStep))*Math.sin(deg2rad(v)),
+                Math.cos(deg2rad(u+3*uStep))
+            );
+            
+            //6
+            vertexList.push(
+                a*(b - Math.cos(deg2rad(u+4*uStep)))*Math.sin(deg2rad(u+4*uStep))*Math.cos(deg2rad(v+vStep)),
+                a*(b - Math.cos(deg2rad(u+4*uStep)))*Math.sin(deg2rad(u+4*uStep))*Math.sin(deg2rad(v+vStep)),
+                Math.cos(deg2rad(u+4*uStep))
             );
         }
     }
 
-    for (let v=0; v<=360; v+=vStep) {
-        for (let u=0; u<=180; u+=uStep) {
-            vertexList.push(
-                a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.cos(deg2rad(v)),
-                a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.sin(deg2rad(v)),
-                Math.cos(deg2rad(u))
-            );
-        }
-    }
+    
 
     return vertexList;
 }
