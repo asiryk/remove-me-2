@@ -32,6 +32,9 @@ function Model(name) {
         gl.vertexAttribPointer(shProgram.iAttribVertex, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(shProgram.iAttribVertex);
    
+        gl.vertexAttribPointer(shProgram.iNormal, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(shProgram.iNormal);    
+
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.count);
     }
 }
@@ -101,6 +104,18 @@ function draw() {
 
     gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, modelViewProjection );
     
+    gl.uniformMatrix4fv(shProgram.iNormalMatrix, false, normalMatrix);
+
+    const lightPos = Array.from(lightPositionEl.getElementsByTagName('input')).map(el => +el.value);
+    gl.uniform3fv(shProgram.iLightPos, lightPos);
+    gl.uniform3fv(shProgram.iLightVec, new Float32Array(3));
+
+    gl.uniform1f(shProgram.iShininess, 1.0);
+
+    gl.uniform3fv(shProgram.iAmbientColor, [0.2, 0.1, 0.0]);
+    gl.uniform3fv(shProgram.iDiffuseColor, [1.0, 1.0, 0.0]);
+    gl.uniform3fv(shProgram.iSpecularColor, [1.0, 1.0, 1.0]);
+
     /* Draw the six faces of a cube, with different colors. */
     gl.uniform4fv(shProgram.iColor, [1,1,0,1] );
 
@@ -118,51 +133,19 @@ function CreateSurfaceData()
 
     for (let u=0; u<=180; u+=uStep) {
         for (let v=0; v<=360; v+=vStep) {
-            //1
             vertexList.push(
                 a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.cos(deg2rad(v)),
                 a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.sin(deg2rad(v)),
                 Math.cos(deg2rad(u))
             );
 
-            //2
             vertexList.push(
                 a*(b - Math.cos(deg2rad(u+uStep)))*Math.sin(deg2rad(u+uStep))*Math.cos(deg2rad(v+vStep)),
                 a*(b - Math.cos(deg2rad(u+uStep)))*Math.sin(deg2rad(u+uStep))*Math.sin(deg2rad(v+vStep)),
                 Math.cos(deg2rad(u+uStep))
             );
-
-            //3
-            vertexList.push(
-                a*(b - Math.cos(deg2rad(u+uStep)))*Math.sin(deg2rad(u+uStep))*Math.cos(deg2rad(v)),
-                a*(b - Math.cos(deg2rad(u+uStep)))*Math.sin(deg2rad(u+uStep))*Math.sin(deg2rad(v)),
-                Math.cos(deg2rad(u+uStep))
-            );
-
-            //4
-            vertexList.push(
-                a*(b - Math.cos(deg2rad(u+2*uStep)))*Math.sin(deg2rad(u+2*uStep))*Math.cos(deg2rad(v+vStep)),
-                a*(b - Math.cos(deg2rad(u+2*uStep)))*Math.sin(deg2rad(u+2*uStep))*Math.sin(deg2rad(v+vStep)),
-                Math.cos(deg2rad(u+2*uStep))
-            );
-
-            //5
-            vertexList.push(
-                a*(b - Math.cos(deg2rad(u+3*uStep)))*Math.sin(deg2rad(u+3*uStep))*Math.cos(deg2rad(v)),
-                a*(b - Math.cos(deg2rad(u+3*uStep)))*Math.sin(deg2rad(u+3*uStep))*Math.sin(deg2rad(v)),
-                Math.cos(deg2rad(u+3*uStep))
-            );
-            
-            //6
-            vertexList.push(
-                a*(b - Math.cos(deg2rad(u+4*uStep)))*Math.sin(deg2rad(u+4*uStep))*Math.cos(deg2rad(v+vStep)),
-                a*(b - Math.cos(deg2rad(u+4*uStep)))*Math.sin(deg2rad(u+4*uStep))*Math.sin(deg2rad(v+vStep)),
-                Math.cos(deg2rad(u+4*uStep))
-            );
         }
     }
-
-    
 
     return vertexList;
 }
@@ -178,6 +161,18 @@ function initGL() {
     shProgram.iAttribVertex              = gl.getAttribLocation(prog, "vertex");
     shProgram.iModelViewProjectionMatrix = gl.getUniformLocation(prog, "ModelViewProjectionMatrix");
     shProgram.iColor                     = gl.getUniformLocation(prog, "color");
+
+    shProgram.iNormal                    = gl.getAttribLocation(prog, 'normal');
+    shProgram.iNormalMatrix              = gl.getUniformLocation(prog, 'normalMat');
+
+    shProgram.iAmbientColor              = gl.getUniformLocation(prog, 'ambientColor');
+    shProgram.iDiffuseColor              = gl.getUniformLocation(prog, 'diffuseColor');
+    shProgram.iSpecularColor             = gl.getUniformLocation(prog, 'specularColor');
+
+    shProgram.iShininess                 = gl.getUniformLocation(prog, 'shininess');
+
+    shProgram.iLightPos                  = gl.getUniformLocation(prog, 'lightPosition');
+    shProgram.iLightVec                  = gl.getUniformLocation(prog, 'lightVec');
 
     surface = new Model('Surface');
     surface.BufferData(CreateSurfaceData());
