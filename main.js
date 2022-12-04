@@ -5,6 +5,7 @@ let surface;                    // A surface model
 let shProgram;                  // A shader program
 let spaceball;                  // A SimpleRotator object that lets the user rotate the view by mouse.
 let N = 20;                     // splines count
+let lightPositionEl;
 
 function deg2rad(angle) {
     return angle * Math.PI / 180;
@@ -49,6 +50,22 @@ function ShaderProgram(name, program) {
     // Location of the uniform matrix representing the combined transformation.
     this.iModelViewProjectionMatrix = -1;
 
+    // Normals
+    this.iNormal = -1;
+    this.iNormalMatrix = -1;
+
+    // Ambient, diffuse, specular
+    this.iAmbientColor = -1;
+    this.iDiffuseColor = -1;
+    this.iSpecularColor = -1;
+
+    // Shininess
+    this.iShininess = -1;
+
+    // Light position
+    this.iLightPos = -1;
+    this.iLightVec = -1;
+
     this.Use = function() {
         gl.useProgram(this.prog);
     }
@@ -75,6 +92,9 @@ function draw() {
     let matAccum0 = m4.multiply(rotateToPointZero, modelView );
     let matAccum1 = m4.multiply(translateToPointZero, matAccum0 );
         
+    const modelviewInv = m4.inverse(matAccum1, new Float32Array(16));
+    const normalMatrix = m4.transpose(modelviewInv, new Float32Array(16));  
+
     /* Multiply the projection matrix times the modelview matrix to give the
        combined transformation matrix, and send that to the shader program. */
     let modelViewProjection = m4.multiply(projection, matAccum1 );
@@ -202,6 +222,8 @@ function createProgram(gl, vShader, fShader) {
  * initialization function that will be called when the page has loaded
  */
 function init() {
+    lightPositionEl = document.getElementById('lightPostion');
+
     let canvas;
     try {
         canvas = document.getElementById("webglcanvas");
@@ -226,5 +248,10 @@ function init() {
 
     spaceball = new TrackballRotator(canvas, draw, 0);
 
+    draw();
+}
+
+function reDraw() {
+    surface.BufferData(CreateSurfaceData());
     draw();
 }
