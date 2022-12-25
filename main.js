@@ -227,6 +227,9 @@ function init() {
     const yInput = document.getElementById("y");
     const zInput = document.getElementById("z");
 
+    const scaleUInput = document.getElementById("scaleU");
+    const scaleVInput = document.getElementById("scaleV");
+
     const updateLight = () => {
         const x = parseFloat(xInput.value);
         const y = parseFloat(yInput.value);
@@ -239,9 +242,20 @@ function init() {
     gl.uniform2fv(shProgram.iTexScale, [1, 1]);
     gl.uniform2fv(shProgram.iTexCenter, [0, 0]);
     
+    gl.uniform2fv(shProgram.iTexScale, [1, 1]);
+    const reScale = () => {
+        const scaleU = parseFloat(scaleUInput.value);
+        const scaleV = parseFloat(scaleVInput.value);
+        gl.uniform2fv(shProgram.iTexScale, [scaleU, scaleV]);
+        draw();
+    };
+
     xInput.addEventListener("input", updateLight);
     yInput.addEventListener("input", updateLight);
     zInput.addEventListener("input", updateLight);
+    
+    scaleUInput.addEventListener("input", reScale);
+    scaleVInput.addEventListener("input", reScale);
     
     const image = new Image();
     image.src = "https://www.the3rdsequence.com/texturedb/download/23/texture/jpg/1024/sea+water-1024x1024.jpg";

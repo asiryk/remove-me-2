@@ -50,7 +50,9 @@ void main() {
     vVertex = vertex;
     vVertexPosition = vec3(position) / position.w;
 
-    vTexcoord = scaleWithPoint(texcoord, texCenter, texScale);
+    vec2 point = vec2(0.5, 0.5);
+
+    vTexcoord = scaleWithPoint(texcoord, point, texScale);
 
     gl_Position = position;
 }`;
