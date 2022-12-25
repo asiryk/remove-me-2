@@ -6,11 +6,22 @@ attribute vec3 vertex;
 attribute vec2 texcoord;
 uniform mat4 ModelViewProjectionMatrix;
 uniform vec2 texScale;
-uniform vec2 texCenter;
+uniform vec2 texCenter; //rotationCenter
+uniform vec2 textureAxis; // rotation axis
+uniform float textureRotAngleDeg; // rotation angle in degrees
 
 varying vec3 vVertex;
 varying vec3 vVertexPosition;
 varying vec2 vTexcoord;
+
+mat4 identity4() {
+  return mat4(
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    0.0, 0.0, 0.0, 1.0
+  );
+}
 
 mat4 genScaleMat(vec3 v) {
   return mat4(
@@ -21,12 +32,56 @@ mat4 genScaleMat(vec3 v) {
   );
 }
 
+mat4 translate(mat4 m, vec3 v) {
+  return m * mat4(
+    vec4(1.0, 0.0, 0.0, v.x),
+    vec4(0.0, 1.0, 0.0, v.y),
+    vec4(0.0, 0.0, 1.0, v.z),
+    vec4(0.0, 0.0, 0.0, 1.0)
+  );
+}
+
 mat4 genTranslateMat(vec3 v) {
   return mat4(
     vec4(1.0, 0.0, 0.0, v.x),
     vec4(0.0, 1.0, 0.0, v.y),
     vec4(0.0, 0.0, 1.0, v.z),
     vec4(0.0, 0.0, 0.0, 1.0)
+  );
+}
+
+mat4 rotate(mat4 m, vec3 axis, float angle) {
+  // Normalize the axis vector
+  axis = normalize(axis);
+
+  // Convert the angle to radians
+  float radians = radians(angle);
+
+  // Calculate the sine and cosine of the angle
+  float c = cos(radians / 2.0);
+  float s = sin(radians / 2.0);
+
+  // Create a quaternion from the axis and angle
+  vec4 q = vec4(s * axis, c);
+
+  // Convert the quaternion to a rotation matrix
+  return m * mat4(
+    1.0 - 2.0 * q.y * q.y - 2.0 * q.z * q.z,
+    2.0 * q.x * q.y - 2.0 * q.z * q.w,
+    2.0 * q.x * q.z + 2.0 * q.y * q.w,
+    0.0,
+    2.0 * q.x * q.y + 2.0 * q.z * q.w,
+    1.0 - 2.0 * q.x * q.x - 2.0 * q.z * q.z,
+    2.0 * q.y * q.z - 2.0 * q.x * q.w,
+    0.0,
+    2.0 * q.x * q.z - 2.0 * q.y * q.w,
+    2.0 * q.y * q.z + 2.0 * q.x * q.w,
+    1.0 - 2.0 * q.x * q.x - 2.0 * q.y * q.y,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0
   );
 }
 
@@ -44,16 +99,24 @@ vec2 scaleWithPoint(vec2 point, vec2 pivot, vec2 scale) {
     return vec2(trb);
 }
 
+vec2 rotateWithPoint(vec2 point, vec2 pivot, vec2 axis, float angle_deg) {
+  mat4 tr = translate(identity4(), vec3(pivot, 0.0));
+  mat4 rt = rotate(tr, vec3(axis, 1.0), angle_deg);
+  mat4 trb = translate(rt, vec3(-pivot, 0.0));
+  return vec2(trb * vec4(point, 0.0, 0.0));
+}
+
 void main() {
     vec4 position = ModelViewProjectionMatrix * vec4(vertex,1.0);
 
     vVertex = vertex;
     vVertexPosition = vec3(position) / position.w;
 
-    vec2 point = vec2(0.5, 0.5);
+    vec2 point = vec2(0, 0);
+    vec2 tex_scaled = scaleWithPoint(texcoord, point, texScale);
 
-    vTexcoord = scaleWithPoint(texcoord, point, texScale);
-
+    vTexcoord  = rotateWithPoint(tex_scaled, texCenter, textureAxis, textureRotAngleDeg);
+    
     gl_Position = position;
 }`;
 

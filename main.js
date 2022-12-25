@@ -58,6 +58,9 @@ function ShaderProgram(name, program) {
     // Location of the uniform matrix representing the combined transformation.
     this.iModelViewProjectionMatrix = -1;
 
+    this.iTextureAxis = -1;
+    this.ITextureRotAngleDeg = -1;
+
     this.Use = function() {
         gl.useProgram(this.prog);
     }
@@ -146,10 +149,14 @@ function initGL() {
     shProgram.iAttribVertex            = gl.getAttribLocation(prog, "vertex");
     shProgram.iAttribTexcoord          = gl.getAttribLocation(prog, "texcoord");
     shProgram.iModelViewProjectionMatrix = gl.getUniformLocation(prog, "ModelViewProjectionMatrix");
-    shProgram.iLightPosition          = gl.getUniformLocation(prog, "lightPosition");
-    shProgram.iNormalMatrix           = gl.getUniformLocation(prog, "normalMatrix");
-    shProgram.iTexScale               = gl.getUniformLocation(prog, "texScale");
-    shProgram.iTexCenter = gl.getUniformLocation(prog, 'texCenter');
+    shProgram.iLightPosition           = gl.getUniformLocation(prog, "lightPosition");
+    shProgram.iNormalMatrix            = gl.getUniformLocation(prog, "normalMatrix");
+    shProgram.iTexScale                = gl.getUniformLocation(prog, "texScale");
+    shProgram.iTexCenter               = gl.getUniformLocation(prog, 'texCenter');
+    shProgram.iTextureAxis             = gl.getUniformLocation(prog, 'textureAxis');
+    shProgram.ITextureRotAngleDeg      = gl.getUniformLocation(prog, 'textureRotAngleDeg');
+
+
 
     surface = new Model('Surface');
     const {vertices, texcoords} = CreateSurfaceData();
@@ -230,6 +237,14 @@ function init() {
     const scaleUInput = document.getElementById("scaleU");
     const scaleVInput = document.getElementById("scaleV");
 
+    const centerUInput = document.getElementById("centerU");
+    const centerVInput = document.getElementById("centerV");
+
+    const axisUInput = document.getElementById("axisU");
+    const axisVInput = document.getElementById("axisV");
+
+    const angleInput = document.getElementById("angle");
+
     const updateLight = () => {
         const x = parseFloat(xInput.value);
         const y = parseFloat(yInput.value);
@@ -243,12 +258,35 @@ function init() {
     gl.uniform2fv(shProgram.iTexCenter, [0, 0]);
     
     gl.uniform2fv(shProgram.iTexScale, [1, 1]);
+    gl.uniform2fv(shProgram.iTexCenter, [0, 0]);
+
+    gl.uniform2fv(shProgram.iTextureAxis, [0, 0]);
+    gl.uniform1f(shProgram.ITextureRotAngleDeg, 0);
+
     const reScale = () => {
         const scaleU = parseFloat(scaleUInput.value);
         const scaleV = parseFloat(scaleVInput.value);
         gl.uniform2fv(shProgram.iTexScale, [scaleU, scaleV]);
         draw();
     };
+    const center = () => {
+        const centerU = parseFloat(centerUInput.value);
+        const centerV = parseFloat(centerVInput.value);
+        gl.uniform2fv(shProgram.iTexCenter, [centerU, centerV]);
+        draw();
+    };
+    const axis = () => {
+        const axisU = parseFloat(axisUInput.value);
+        const axisV = parseFloat(axisVInput.value);
+        gl.uniform2fv(shProgram.iTextureAxis, [axisU, axisV]);
+        draw();
+    };
+    const angle = () => {
+        const angle = parseFloat(angleInput.value);
+        gl.uniform1f(shProgram.ITextureRotAngleDeg, angle);
+        draw();
+    };
+
 
     xInput.addEventListener("input", updateLight);
     yInput.addEventListener("input", updateLight);
@@ -256,6 +294,14 @@ function init() {
     
     scaleUInput.addEventListener("input", reScale);
     scaleVInput.addEventListener("input", reScale);
+
+    centerUInput.addEventListener("input", center);
+    centerVInput.addEventListener("input", center);
+
+    axisUInput.addEventListener("input", axis);
+    axisVInput.addEventListener("input", axis);
+
+    angleInput.addEventListener("input", angle);
     
     const image = new Image();
     image.src = "https://www.the3rdsequence.com/texturedb/download/23/texture/jpg/1024/sea+water-1024x1024.jpg";
