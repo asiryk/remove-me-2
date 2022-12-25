@@ -3,39 +3,56 @@
 // Vertex shader
 const vertexShaderSource = `
 attribute vec3 vertex;
-attribute vec3 normal;
-uniform mat4 ModelViewProjectionMatrix, normalMat;
-uniform float shininess;
-uniform vec3 ambientColor;
-uniform vec3 diffuseColor;
-uniform vec3 specularColor;
-uniform vec3 lightPosition;
+attribute vec2 texcoord;
+uniform mat4 ModelViewProjectionMatrix;
+uniform vec2 texScale;
+uniform vec2 texCenter;
 
-varying vec4 color;
+varying vec3 vVertex;
+varying vec3 vVertexPosition;
+varying vec2 vTexcoord;
+
+mat4 genScaleMat(vec3 v) {
+  return mat4(
+    vec4(v.x, 0.0, 0.0, 0.0),
+    vec4(0.0, v.y, 0.0, 0.0),
+    vec4(0.0, 0.0, v.z, 0.0),
+    vec4(0.0, 0.0, 0.0, 1.0)
+  );
+}
+
+mat4 genTranslateMat(vec3 v) {
+  return mat4(
+    vec4(1.0, 0.0, 0.0, v.x),
+    vec4(0.0, 1.0, 0.0, v.y),
+    vec4(0.0, 0.0, 1.0, v.z),
+    vec4(0.0, 0.0, 0.0, 1.0)
+  );
+}
+
+vec2 scaleWithPoint(vec2 point, vec2 pivot, vec2 scale) {
+    mat4 tran = genTranslateMat(vec3(pivot, 0.));
+    mat4 tranBack = genTranslateMat(-vec3(pivot, 0.));
+    mat4 scaleMat = genScaleMat(vec3(scale, 0.));
+
+    vec4 point4 = vec4(point, 0., 0.);
+
+    vec4 tr = tran * point4;
+    vec4 sc = tr * scaleMat;
+    vec4 trb = sc * tranBack;
+
+    return vec2(trb);
+}
 
 void main() {
-    vec4 vertPos4 = ModelViewProjectionMatrix * vec4(vertex, 1.0);
-    vec3 vertPos = vec3(vertPos4) / vertPos4.w;
-    vec3 normalInterp = vec3(normalMat * vec4(normal, 0.0));
-    gl_Position = vertPos4;
+    vec4 position = ModelViewProjectionMatrix * vec4(vertex,1.0);
 
-    vec3 normal = normalize(normalInterp);
-    vec3 lightDirection = normalize(lightPosition - vertPos);
+    vVertex = vertex;
+    vVertexPosition = vec3(position) / position.w;
 
-    float nDotLight = max(dot(normal, lightDirection), 0.0);
-    float specularLight = 0.0;
-    if (nDotLight > 0.0) {
-        vec3 viewDir = normalize(-vertPos);
-        vec3 halfDir = normalize(lightDirection + viewDir);
-        float specularAngle = max(dot(halfDir, normal), 0.0);
-        specularLight = pow(specularAngle, shininess);
-    }
+    vTexcoord = scaleWithPoint(texcoord, texCenter, texScale);
 
-    vec3 diffuse = nDotLight * diffuseColor;
-    vec3 ambient = ambientColor;
-    vec3 specular = specularLight * specularColor;
-
-    color = vec4(diffuse + ambient + specular, 1.0);
+    gl_Position = position;
 }`;
 
 
@@ -47,7 +64,40 @@ const fragmentShaderSource = `
    precision mediump float;
 #endif
 
-varying vec4 color;
+varying vec3 vVertex;
+varying vec3 vVertexPosition;
+varying vec2 vTexcoord;
+
+uniform mat4 normalMatrix;
+uniform vec3 lightPosition;
+uniform sampler2D uTexture;
+
+vec3 calculate_light(vec3 position) {
+    vec3 shape_color = vec3(1., 1., 1.);
+    vec3 light_color = vec3(0., 1., 1.);
+
+    vec3 ambient = light_color * 0.2;
+
+    vec3 normal = normalize(vec3(normalMatrix * vec4(vVertex, 0.)));
+    vec3 light_direction = normalize(lightPosition - position);
+    float dot_light = max(dot(normal, light_direction), 0.0);
+    vec3 diffuse = shape_color * dot_light;
+
+    float specular_strength = 0.5;
+    float spec = 0.;
+    if (dot_light > 0.) {
+        vec3 view_dir = normalize(-position);
+        vec3 reflect_dir = reflect(-light_direction, normal);
+        float spec_angle = max(dot(view_dir, reflect_dir), 0.0);
+        spec = pow(spec_angle, 32.);
+    }
+    vec3 specular = specular_strength * spec * light_color;
+
+    return ambient + diffuse + specular;
+}
+
 void main() {
-    gl_FragColor = color;
+    vec4 texture = texture2D(uTexture, vTexcoord);
+    vec4 lightColor = vec4(calculate_light(vVertexPosition), 1.);
+    gl_FragColor = texture * lightColor;
 }`;

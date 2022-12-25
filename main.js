@@ -15,26 +15,31 @@ function deg2rad(angle) {
 // Constructor
 function Model(name) {
     this.name = name;
-    this.iVertexBuffer = gl.createBuffer();
     this.count = 0;
 
-    this.BufferData = function(vertices) {
+    this.BufferData = function(vertices, texcoords) {
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.iVertexBuffer);
+        // vertices
+        const vBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STREAM_DRAW);
+        gl.enableVertexAttribArray(shProgram.iAttribVertex);
+        gl.vertexAttribPointer(shProgram.iAttribVertex, 3, gl.FLOAT, false, 0, 0);
 
         this.count = vertices.length/3;
+        // texcoords
+        const tBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, tBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texcoords), gl.STREAM_DRAW);
+        gl.enableVertexAttribArray(shProgram.iAttribTexcoord);
+        gl.vertexAttribPointer(shProgram.iAttribTexcoord, 2, gl.FLOAT, false, 0, 0);
+
+        this.count = vertices.length / 3;
+        this.vertices = vertices;
     }
 
     this.Draw = function() {
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.iVertexBuffer);
-        gl.vertexAttribPointer(shProgram.iAttribVertex, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(shProgram.iAttribVertex);
-   
-        gl.vertexAttribPointer(shProgram.iNormal, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(shProgram.iNormal);    
-
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.count);
     }
 }
@@ -52,22 +57,6 @@ function ShaderProgram(name, program) {
     this.iColor = -1;
     // Location of the uniform matrix representing the combined transformation.
     this.iModelViewProjectionMatrix = -1;
-
-    // Normals
-    this.iNormal = -1;
-    this.iNormalMatrix = -1;
-
-    // Ambient, diffuse, specular
-    this.iAmbientColor = -1;
-    this.iDiffuseColor = -1;
-    this.iSpecularColor = -1;
-
-    // Shininess
-    this.iShininess = -1;
-
-    // Light position
-    this.iLightPos = -1;
-    this.iLightVec = -1;
 
     this.Use = function() {
         gl.useProgram(this.prog);
@@ -94,60 +83,56 @@ function draw() {
 
     let matAccum0 = m4.multiply(rotateToPointZero, modelView );
     let matAccum1 = m4.multiply(translateToPointZero, matAccum0 );
-        
-    const modelviewInv = m4.inverse(matAccum1, new Float32Array(16));
-    const normalMatrix = m4.transpose(modelviewInv, new Float32Array(16));  
 
+    const modelviewInv = m4.inverse(matAccum1, new Float32Array(16));
+    const normalMatrix = m4.transpose(modelviewInv, new Float32Array(16));
+        
     /* Multiply the projection matrix times the modelview matrix to give the
        combined transformation matrix, and send that to the shader program. */
     let modelViewProjection = m4.multiply(projection, matAccum1 );
 
     gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, modelViewProjection );
-    
+
     gl.uniformMatrix4fv(shProgram.iNormalMatrix, false, normalMatrix);
-
-    const lightPos = Array.from(lightPositionEl.getElementsByTagName('input')).map(el => +el.value);
-    gl.uniform3fv(shProgram.iLightPos, lightPos);
-    gl.uniform3fv(shProgram.iLightVec, new Float32Array(3));
-
-    gl.uniform1f(shProgram.iShininess, 1.0);
-
-    gl.uniform3fv(shProgram.iAmbientColor, [0.2, 0.1, 0.0]);
-    gl.uniform3fv(shProgram.iDiffuseColor, [1.0, 1.0, 0.0]);
-    gl.uniform3fv(shProgram.iSpecularColor, [1.0, 1.0, 1.0]);
-
-    /* Draw the six faces of a cube, with different colors. */
-    gl.uniform4fv(shProgram.iColor, [1,1,0,1] );
 
     surface.Draw();
 }
 
 function CreateSurfaceData()
 {
-    let vertexList = [];
+    let vertices = [];
+    let texcoords = [];
     let a = 0.5;
     let b = 1;
 
     let vStep = 360/(N-1);
     let uStep = 180/(N-1);
 
+    const calculateUv = (u, v) => {
+        return [u / 180, v/360];
+    }
+
     for (let u=0; u<=180; u+=uStep) {
         for (let v=0; v<=360; v+=vStep) {
-            vertexList.push(
+            vertices.push(
                 a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.cos(deg2rad(v)),
                 a*(b - Math.cos(deg2rad(u)))*Math.sin(deg2rad(u))*Math.sin(deg2rad(v)),
                 Math.cos(deg2rad(u))
             );
+            
+            texcoords.push(...calculateUv(u,v));
 
-            vertexList.push(
+            vertices.push(
                 a*(b - Math.cos(deg2rad(u+uStep)))*Math.sin(deg2rad(u+uStep))*Math.cos(deg2rad(v+vStep)),
                 a*(b - Math.cos(deg2rad(u+uStep)))*Math.sin(deg2rad(u+uStep))*Math.sin(deg2rad(v+vStep)),
                 Math.cos(deg2rad(u+uStep))
             );
+
+            texcoords.push(...calculateUv(u,v));
         }
     }
 
-    return vertexList;
+    return {vertices, texcoords};
 }
 
 
@@ -158,24 +143,17 @@ function initGL() {
     shProgram = new ShaderProgram('Basic', prog);
     shProgram.Use();
 
-    shProgram.iAttribVertex              = gl.getAttribLocation(prog, "vertex");
+    shProgram.iAttribVertex            = gl.getAttribLocation(prog, "vertex");
+    shProgram.iAttribTexcoord          = gl.getAttribLocation(prog, "texcoord");
     shProgram.iModelViewProjectionMatrix = gl.getUniformLocation(prog, "ModelViewProjectionMatrix");
-    shProgram.iColor                     = gl.getUniformLocation(prog, "color");
-
-    shProgram.iNormal                    = gl.getAttribLocation(prog, 'normal');
-    shProgram.iNormalMatrix              = gl.getUniformLocation(prog, 'normalMat');
-
-    shProgram.iAmbientColor              = gl.getUniformLocation(prog, 'ambientColor');
-    shProgram.iDiffuseColor              = gl.getUniformLocation(prog, 'diffuseColor');
-    shProgram.iSpecularColor             = gl.getUniformLocation(prog, 'specularColor');
-
-    shProgram.iShininess                 = gl.getUniformLocation(prog, 'shininess');
-
-    shProgram.iLightPos                  = gl.getUniformLocation(prog, 'lightPosition');
-    shProgram.iLightVec                  = gl.getUniformLocation(prog, 'lightVec');
+    shProgram.iLightPosition          = gl.getUniformLocation(prog, "lightPosition");
+    shProgram.iNormalMatrix           = gl.getUniformLocation(prog, "normalMatrix");
+    shProgram.iTexScale               = gl.getUniformLocation(prog, "texScale");
+    shProgram.iTexCenter = gl.getUniformLocation(prog, 'texCenter');
 
     surface = new Model('Surface');
-    surface.BufferData(CreateSurfaceData());
+    const {vertices, texcoords} = CreateSurfaceData();
+    surface.BufferData(vertices, texcoords);
 
     gl.enable(gl.DEPTH_TEST);
 }
@@ -228,6 +206,7 @@ function init() {
         }
     }
     catch (e) {
+        console.error(e);
         document.getElementById("canvas-holder").innerHTML =
             "<p>Sorry, could not get a WebGL graphics context.</p>";
         return;
@@ -236,6 +215,7 @@ function init() {
         initGL();  // initialize the WebGL graphics context
     }
     catch (e) {
+        console.error(e);
         document.getElementById("canvas-holder").innerHTML =
             "<p>Sorry, could not initialize the WebGL graphics context: " + e + "</p>";
         return;
@@ -243,7 +223,43 @@ function init() {
 
     spaceball = new TrackballRotator(canvas, draw, 0);
 
+    const xInput = document.getElementById("x");
+    const yInput = document.getElementById("y");
+    const zInput = document.getElementById("z");
+
+    const updateLight = () => {
+        const x = parseFloat(xInput.value);
+        const y = parseFloat(yInput.value);
+        const z = parseFloat(zInput.value);
+
+        gl.uniform3fv(shProgram.iLightPosition, [x, y, z]);
+        draw();
+    };
+
+    gl.uniform2fv(shProgram.iTexScale, [1, 1]);
+    gl.uniform2fv(shProgram.iTexCenter, [0, 0]);
+    
+    xInput.addEventListener("input", updateLight);
+    yInput.addEventListener("input", updateLight);
+    zInput.addEventListener("input", updateLight);
+    
     draw();
+
+    const image = new Image();
+    image.src = "https://www.the3rdsequence.com/texturedb/download/23/texture/jpg/1024/sea+water-1024x1024.jpg";
+    image.crossOrigin = "anonymous";
+    image.onload = () => {
+        document.body.appendChild(image);
+        setTexture(gl, image);
+    }
+}
+
+function setTexture(gl, image) {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 }
 
 function reDraw() {
