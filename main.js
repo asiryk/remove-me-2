@@ -243,15 +243,15 @@ function init() {
     yInput.addEventListener("input", updateLight);
     zInput.addEventListener("input", updateLight);
     
-    draw();
-
     const image = new Image();
     image.src = "https://www.the3rdsequence.com/texturedb/download/23/texture/jpg/1024/sea+water-1024x1024.jpg";
     image.crossOrigin = "anonymous";
     image.onload = () => {
-        document.body.appendChild(image);
         setTexture(gl, image);
+        draw();
     }
+
+    draw();
 }
 
 function setTexture(gl, image) {
@@ -260,9 +260,4 @@ function setTexture(gl, image) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-}
-
-function reDraw() {
-    surface.BufferData(CreateSurfaceData());
-    draw();
 }
