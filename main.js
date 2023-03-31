@@ -69,15 +69,7 @@ function ShaderProgram(name, program) {
     }
 }
 
-
-/* Draws a colored cube, along with a set of coordinate axes.
- * (Note that the use of the above drawPrimitive function is not an efficient
- * way to draw with WebGL.  Here, the geometry is so simple that it doesn't matter.)
- */
-function draw() {
-    gl.clearColor(0,0,0,1);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+function drawLeft() {
     /* Set the values of the projection transformation */
     let projection = m4.perspective(Math.PI/8, 1, 8, 12);
 
@@ -113,6 +105,56 @@ function draw() {
     gl.uniform4fv(shProgram.iColor, [0,1,1,1] );
 
     surface.Draw();
+}
+
+function drawRight() {
+    /* Set the values of the projection transformation */
+    let projection = m4.perspective(Math.PI/8, 1, 8, 12);
+
+    /* Get the view matrix from the SimpleRotator object.*/
+    let modelView = spaceball.getViewMatrix();
+
+    let rotateToPointZero = m4.axisRotation([0.707,0.707,0], 0.7);
+    let translateToPointZero = m4.translation(0,0,-10);
+
+    let matAccum0 = m4.multiply(rotateToPointZero, modelView );
+    let matAccum1 = m4.multiply(translateToPointZero, matAccum0 );
+
+    const modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
+    const normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
+
+    /* Multiply the projection matrix times the modelview matrix to give the
+       combined transformation matrix, and send that to the shader program. */
+    let modelViewProjection = m4.multiply(projection, matAccum1);
+
+    gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, modelViewProjection);
+
+    gl.uniformMatrix4fv(shProgram.iNormalMatrix, false, normalMatrix);
+
+    const lightPos = Array.from(lightPositionEl.getElementsByTagName('input')).map(el => +el.value);
+    gl.uniform3fv(shProgram.iLightPos, lightPos);
+    gl.uniform3fv(shProgram.iLightVec, new Float32Array(3));
+
+    gl.uniform1f(shProgram.iShininess, 1.0);
+
+    gl.uniform3fv(shProgram.iLightColor, [0, 1, 1]);
+
+    /* Draw the six faces of a cube, with different colors. */
+    gl.uniform4fv(shProgram.iColor, [0,1,1,1] );
+
+    surface.Draw();
+}
+
+
+/* Draws a colored cube, along with a set of coordinate axes.
+ * (Note that the use of the above drawPrimitive function is not an efficient
+ * way to draw with WebGL.  Here, the geometry is so simple that it doesn't matter.)
+ */
+function draw() {
+    gl.clearColor(0,0,0,1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    drawLeft();
+    drawRight();
 }
 
 function CreateSurfaceData() {
