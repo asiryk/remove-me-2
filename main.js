@@ -5,6 +5,7 @@ let surface;                    // A surface model
 let shProgram;                  // A shader program
 let spaceball;                  // A SimpleRotator object that lets the user rotate the view by mouse.
 let lightPositionEl;
+let stereoCamera;
 
 function deg2rad(angle) {
     return angle * Math.PI / 180;
@@ -69,9 +70,38 @@ function ShaderProgram(name, program) {
     }
 }
 
+function leftFrustum(stereoCamera) {
+    const { eyeSeparation, convergence, aspectRatio, fov, near, far } = stereoCamera;
+    const top = near * Math.tan(fov / 2);
+    const bottom = -top;
+
+    const a = aspectRatio * Math.tan(fov / 2) * convergence;
+    const b = a - eyeSeparation / 2;
+    const c = a + eyeSeparation / 2;
+
+    const left = -b * near / convergence;
+    const right = c * near / convergence;
+
+    return m4.frustum(left, right, bottom, top, near, far);
+}
+
+function rightFrustum(stereoCamera) {
+    const { eyeSeparation, convergence, aspectRatio, fov, near, far } = stereoCamera;
+    const top = near * Math.tan(fov / 2);
+    const bottom = -top;
+
+    const a = aspectRatio * Math.tan(fov / 2) * convergence;
+    const b = a - eyeSeparation / 2;
+    const c = a + eyeSeparation / 2;
+
+    const left = -c * near / convergence;
+    const right = b * near / convergence;
+    return m4.frustum(left, right, bottom, top, near, far);
+}
+
 function drawLeft() {
     /* Set the values of the projection transformation */
-    let projection = m4.perspective(Math.PI/8, 1, 8, 12);
+    let projection = leftFrustum(stereoCamera);
 
     /* Get the view matrix from the SimpleRotator object.*/
     let modelView = spaceball.getViewMatrix();
@@ -93,8 +123,8 @@ function drawLeft() {
 
     gl.uniformMatrix4fv(shProgram.iNormalMatrix, false, normalMatrix);
 
-    const lightPos = Array.from(lightPositionEl.getElementsByTagName('input')).map(el => +el.value);
-    gl.uniform3fv(shProgram.iLightPos, lightPos);
+    // const lightPos = Array.from(lightPositionEl.getElementsByTagName('input')).map(el => +el.value);
+    // gl.uniform3fv(shProgram.iLightPos, lightPos);
     gl.uniform3fv(shProgram.iLightVec, new Float32Array(3));
 
     gl.uniform1f(shProgram.iShininess, 1.0);
@@ -109,7 +139,7 @@ function drawLeft() {
 
 function drawRight() {
     /* Set the values of the projection transformation */
-    let projection = m4.perspective(Math.PI/8, 1, 8, 12);
+    let projection = rightFrustum(stereoCamera);
 
     /* Get the view matrix from the SimpleRotator object.*/
     let modelView = spaceball.getViewMatrix();
@@ -131,8 +161,8 @@ function drawRight() {
 
     gl.uniformMatrix4fv(shProgram.iNormalMatrix, false, normalMatrix);
 
-    const lightPos = Array.from(lightPositionEl.getElementsByTagName('input')).map(el => +el.value);
-    gl.uniform3fv(shProgram.iLightPos, lightPos);
+    // const lightPos = Array.from(lightPositionEl.getElementsByTagName('input')).map(el => +el.value);
+    // gl.uniform3fv(shProgram.iLightPos, lightPos);
     gl.uniform3fv(shProgram.iLightVec, new Float32Array(3));
 
     gl.uniform1f(shProgram.iShininess, 1.0);
@@ -152,8 +182,12 @@ function drawRight() {
  */
 function draw() {
     gl.clearColor(0,0,0,1);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.colorMask(false, true, true, true);
     drawLeft();
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.colorMask(true, false, false, true);
     drawRight();
 }
 
@@ -235,6 +269,17 @@ function initGL() {
     surface = new Model('Surface');
     const {vertices, uvs} = CreateSurfaceData();
     surface.BufferData(vertices, uvs);
+
+    const ap = gl.canvas.width / gl.canvas.height;
+
+    stereoCamera = {
+        eyeSeparation: 0.004,
+        convergence: 1,
+        aspectRatio: ap,
+        fov: deg2rad(25),
+        near: 0.0001,
+        far: 20,
+    };
 
     gl.enable(gl.DEPTH_TEST);
 }
