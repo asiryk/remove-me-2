@@ -185,10 +185,10 @@ function draw() {
     // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.colorMask(false, true, true, true);
-    drawLeft();
+    drawRight();
     gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.colorMask(true, false, false, true);
-    drawRight();
+    drawLeft();
 }
 
 function CreateSurfaceData() {
@@ -351,6 +351,10 @@ function init() {
     const scaleVInput = document.getElementById("scaleV");
     const centerUInput = document.getElementById("centerU");
     const centerVInput = document.getElementById("centerV");
+    const eyeSeparationInput = document.getElementById("eyeSeparation");
+    const convergenceInput = document.getElementById("convergence");
+    const fovIntput = document.getElementById("fov");
+    const nearInput = document.getElementById("near");
 
     function setSpanValue (id, value) {
         document.getElementById('scale_value_'+id).innerHTML = value;
@@ -370,10 +374,21 @@ function init() {
         gl.uniform2fv(shProgram.iTexCenter, [centerU, centerV]);
         draw();
     };
+    const stereoCam = () => {
+        stereoCamera.eyeSeparation = parseFloat(eyeSeparationInput.value);
+        stereoCamera.convergence = parseFloat(convergenceInput.value);
+        stereoCamera.fov = deg2rad(parseFloat(fovIntput.value));
+        stereoCamera.near = parseFloat(nearInput.value);
+        draw();
+    }
     scaleUInput.addEventListener("input", scale);
     scaleVInput.addEventListener("input", scale);
     centerUInput.addEventListener("input", center);
     centerVInput.addEventListener("input", center);
+    eyeSeparationInput.addEventListener("input", stereoCam);
+    convergenceInput.addEventListener("input", stereoCam);
+    fovIntput.addEventListener("input", stereoCam);
+    nearInput.addEventListener("input", stereoCam);
 
   
     const teximage = new Image();

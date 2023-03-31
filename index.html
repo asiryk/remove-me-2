@@ -32,9 +32,9 @@
 </head>
 <body onload="init()">
 
-<h2>25 Oleksandr Snytko</h2>
+<h2>Oleksandr Snytko</h2>
 
-<div id="lightSettings">
+<div id="lightSettings" style="display: none;">
       <label for="scaleU">SCALE U (<span id="scale_value_U" class="r">1</span>)</label>
       <input type="range" id="scaleU" name="scaleU" min="1" max="10" step="0.1" value="1">
 
@@ -43,15 +43,33 @@
 </div>
 
 
-<div class="gw">
+<div class="gw" style="display: none;">
     <input type="hidden" id="centerU" name="centerU" value="0">
     <input type="hidden" id="centerV" name="centerV" value="0">
     <div>Press w\s to change <span class="b">V</span> and a\d to change <span class="r">U</span> </div>
     <div>Point V:<span id="centerV_span" class="b">0</span> <span style="margin: 0 10px">|</span>U: <span id="centerU_span" class="r">0</span> </div>
 </div>
 
+  <div>
+    <label for="eyeSeparation">eye separation</label>
+    <input type="range" id="eyeSeparation" name="eyeSeparation" min="0.001" max="0.05" step="0.001" value="0.004">
+  </div>
+  <div>
+    <label for="convergence">convergence</label>
+    <input type="range" id="convergence" name="convergence" min="0.1" max="10" step="0.1" value="1">
+  </div>
+  <div>
+    <label for="fov">fov</label>
+    <input type="range" id="fov" name="fov" min="0" max="90" step="1" value="25">
+  </div>
+  <div>
+    <label for="near">near clipping</label>
+    <input type="range" id="near" name="near" min="0" max="11" step="0.001" value="0.01">
+  </div>
+
 <div id="canvas-holder">
-   <canvas width="600" height="600" id="webglcanvas" style=""></canvas>
+   <canvas width="600" height="600" id="webglcanvas"
+        style=""></canvas>
 </div>
 
 
