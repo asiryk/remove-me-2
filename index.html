@@ -63,7 +63,7 @@
 <!-- stereo camera-->
   <div>
     <label for="eyeSeparation">eye separation</label>
-    <input type="range" id="eyeSeparation" name="eyeSeparation" min="0.001" max="0.01" step="0.001" value="0.004">
+    <input type="range" id="eyeSeparation" name="eyeSeparation" min="0.001" max="0.05" step="0.001" value="0.004">
   </div>
   <div>
     <label for="convergence">convergence</label>
@@ -72,6 +72,10 @@
   <div>
     <label for="fov">fov</label>
     <input type="range" id="fov" name="fov" min="0" max="90" step="1" value="15">
+  </div>
+  <div>
+    <label for="near">near clipping</label>
+    <input type="range" id="near" name="near" min="0" max="11" step="0.001" value="0.01">
   </div>
 
 <video src="" width="600" height="600"

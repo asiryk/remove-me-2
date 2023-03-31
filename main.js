@@ -336,7 +336,8 @@ function init() {
 
     const eyeSeparationInput = document.getElementById("eyeSeparation");
     const convergenceInput = document.getElementById("convergence");
-    const fovIntput = document.getElementById("fov");
+    const fovInput = document.getElementById("fov");
+    const nearInput = document.getElementById("near");
 
     const updateLight = () => {
         const x = parseFloat(xInput.value);
@@ -382,7 +383,8 @@ function init() {
     const stereoCam = () => {
         stereoCamera.eyeSeparation = parseFloat(eyeSeparationInput.value);
         stereoCamera.convergence = parseFloat(convergenceInput.value);
-        stereoCamera.fov = deg2rad(parseFloat(fovIntput.value));
+        stereoCamera.fov = deg2rad(parseFloat(fovInput.value));
+        stereoCamera.near = parseFloat(nearInput.value);
         draw();
     } 
 
@@ -404,7 +406,8 @@ function init() {
 
     eyeSeparationInput.addEventListener("input", stereoCam);
     convergenceInput.addEventListener("input", stereoCam);
-    fovIntput.addEventListener("input", stereoCam);
+    fovInput.addEventListener("input", stereoCam);
+    nearInput.addEventListener("input", stereoCam);
     
     const image = new Image();
     image.src = "https://www.the3rdsequence.com/texturedb/download/23/texture/jpg/1024/sea+water-1024x1024.jpg";
