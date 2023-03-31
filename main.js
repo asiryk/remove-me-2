@@ -6,7 +6,6 @@ let shProgram;                  // A shader program
 let spaceball;                  // A SimpleRotator object that lets the user rotate the view by mouse.
 let N = 20;                     // splines count
 let lightPositionEl;
-
 let stereoCamera;
 
 function deg2rad(angle) {
@@ -68,6 +67,35 @@ function ShaderProgram(name, program) {
     }
 }
 
+function leftFrustum(stereoCamera) {
+    const { eyeSeparation, convergence, aspectRatio, fov, near, far } = stereoCamera;
+    const top = near * Math.tan(fov / 2);
+    const bottom = -top;
+
+    const a = aspectRatio * Math.tan(fov / 2) * convergence;
+    const b = a - eyeSeparation / 2;
+    const c = a + eyeSeparation / 2;
+
+    const left = -b * near / convergence;
+    const right = c * near / convergence;
+
+    return m4.frustum(left, right, bottom, top, near, far);
+}
+
+function rightFrustum(stereoCamera) {
+    const { eyeSeparation, convergence, aspectRatio, fov, near, far } = stereoCamera;
+    const top = near * Math.tan(fov / 2);
+    const bottom = -top;
+
+    const a = aspectRatio * Math.tan(fov / 2) * convergence;
+    const b = a - eyeSeparation / 2;
+    const c = a + eyeSeparation / 2;
+
+    const left = -c * near / convergence;
+    const right = b * near / convergence;
+    return m4.frustum(left, right, bottom, top, near, far);
+}
+
 
 /* Draws a colored cube, along with a set of coordinate axes.
  * (Note that the use of the above drawPrimitive function is not an efficient
@@ -76,8 +104,8 @@ function ShaderProgram(name, program) {
 
 function drawLeft() {
     /* Set the values of the projection transformation */
-    let projection = m4.perspective(Math.PI/8, 1, 8, 12); 
-    
+    let projection = leftFrustum(stereoCamera);
+
     /* Get the view matrix from the SimpleRotator object.*/
     let modelView = spaceball.getViewMatrix();
 
@@ -104,12 +132,12 @@ function drawLeft() {
 
 function drawRight() {
     /* Set the values of the projection transformation */
-    let projection = m4.perspective(Math.PI/8, 1, 8, 12); 
+    let projection = rightFrustum(stereoCamera);
     
     /* Get the view matrix from the SimpleRotator object.*/
     let modelView = spaceball.getViewMatrix();
 
-    let rotateToPointZero = m4.axisRotation([0.707,0.707,0], 0.1);
+    let rotateToPointZero = m4.axisRotation([0.707,0.707,0], 0.7);
     let translateToPointZero = m4.translation(0,0,-10);
 
     let matAccum0 = m4.multiply(rotateToPointZero, modelView );
@@ -131,8 +159,12 @@ function drawRight() {
 
 function draw() { 
     gl.clearColor(0,0,0,1);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.colorMask(true, false, false, true);
     drawLeft();
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.colorMask(false, true, true, true);
     drawRight();
 }
 
@@ -197,7 +229,16 @@ function initGL() {
     const {vertices, texcoords} = CreateSurfaceData();
     surface.BufferData(vertices, texcoords);
 
-    stereoCamera = {};
+    const ap = gl.canvas.width / gl.canvas.height;
+
+    stereoCamera = {
+        eyeSeparation: 0.01,
+        convergence: 1,
+        aspectRatio: ap,
+        fov: deg2rad(15),
+        near: 0.0001,
+        far: 20,
+    };
 
     gl.enable(gl.DEPTH_TEST);
 }
