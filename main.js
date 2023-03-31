@@ -232,7 +232,7 @@ function initGL() {
     const ap = gl.canvas.width / gl.canvas.height;
 
     stereoCamera = {
-        eyeSeparation: 0.01,
+        eyeSeparation: 0.004,
         convergence: 1,
         aspectRatio: ap,
         fov: deg2rad(15),
