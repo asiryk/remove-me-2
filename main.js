@@ -323,6 +323,10 @@ function init() {
 
     const angleInput = document.getElementById("angle");
 
+    const eyeSeparationInput = document.getElementById("eyeSeparation");
+    const convergenceInput = document.getElementById("convergence");
+    const fovIntput = document.getElementById("fov");
+
     const updateLight = () => {
         const x = parseFloat(xInput.value);
         const y = parseFloat(yInput.value);
@@ -364,6 +368,12 @@ function init() {
         gl.uniform1f(shProgram.ITextureRotAngleDeg, angle);
         draw();
     };
+    const stereoCam = () => {
+        stereoCamera.eyeSeparation = parseFloat(eyeSeparationInput.value);
+        stereoCamera.convergence = parseFloat(convergenceInput.value);
+        stereoCamera.fov = deg2rad(parseFloat(fovIntput.value));
+        draw();
+    } 
 
 
     xInput.addEventListener("input", updateLight);
@@ -380,6 +390,10 @@ function init() {
     axisVInput.addEventListener("input", axis);
 
     angleInput.addEventListener("input", angle);
+
+    eyeSeparationInput.addEventListener("input", stereoCam);
+    convergenceInput.addEventListener("input", stereoCam);
+    fovIntput.addEventListener("input", stereoCam);
     
     const image = new Image();
     image.src = "https://www.the3rdsequence.com/texturedb/download/23/texture/jpg/1024/sea+water-1024x1024.jpg";
