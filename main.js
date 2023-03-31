@@ -343,6 +343,17 @@ function init() {
         return;
     }
 
+    const videoElement = document.querySelector('video');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            videoElement.srcObject = stream;
+            videoElement.play();
+        })
+        .catch(error => {
+            console.error('Error accessing user media', error);
+        });
+
     spaceball = new TrackballRotator(canvas, draw, 0);
 
     gl.uniform2fv(shProgram.iTexScale, [1, 1]);
