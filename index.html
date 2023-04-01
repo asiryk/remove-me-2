@@ -1,33 +1,47 @@
 <!DOCTYPE html>
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 
-<title>PA#2</title>
-<style>
-    body {
-        background-color: #b1fff6;
-    }
+    <title>PA#1</title>
+    <style>
+        body {
+            background-color: #b1fff6;
+        }
 
-    .r {
-        color: red;
-    }
+        .r {
+            color: red;
+        }
 
-    .b {
-        color: blue;
-    }
+        .b {
+            color: blue;
+        }
 
-    .gw {
-        margin: 20px;
-        padding: 20px;
-        font-weight: bold;
-        font-size: 20px;
-    }
-</style>
+        .gw {
+            margin: 20px;
+            padding: 20px;
+            font-weight: bold;
+            font-size: 20px;
+        }
 
-<script src="./Utils/trackball-rotator.js"></script>
-<script src="./Utils/m4.js"></script>
-<script src="./shader.gpu"></script>
-<script src="./main.js"></script>
+        .params {
+            width: 30%;
+        }
+
+        .params > div{
+            padding: 10px;
+        }
+
+        .params > div:hover{
+            background-color: #ff7c9b;
+        }
+    </style>
+
+    <script src="./Utils/trackball-rotator.js"></script>
+    <script src="./Utils/m4.js"></script>
+    <script src="./shader.gpu"></script>
+    <script src="./main.js"></script>
 
 </head>
 <body onload="init()">
@@ -35,46 +49,49 @@
 <h2>Oleksandr Snytko</h2>
 
 <div id="lightSettings" style="display: none;">
-      <label for="scaleU">SCALE U (<span id="scale_value_U" class="r">1</span>)</label>
-      <input type="range" id="scaleU" name="scaleU" min="1" max="10" step="0.1" value="1">
+    <label for="scaleU">SCALE U (<span id="scale_value_U" class="r">1</span>)</label>
+    <input type="range" id="scaleU" name="scaleU" min="1" max="10" step="0.1" value="1">
 
-      <label for="scaleV">SCALE V (<span id="scale_value_V" class="b">1</span>)</label>
-      <input type="range" id="scaleV" name="scaleV" min="1" max="10" step="0.1" value="1">
+    <label for="scaleV">SCALE V (<span id="scale_value_V" class="b">1</span>)</label>
+    <input type="range" id="scaleV" name="scaleV" min="1" max="10" step="0.1" value="1">
 </div>
 
 
 <div class="gw" style="display: none;">
     <input type="hidden" id="centerU" name="centerU" value="0">
     <input type="hidden" id="centerV" name="centerV" value="0">
-    <div>Press w\s to change <span class="b">V</span> and a\d to change <span class="r">U</span> </div>
-    <div>Point V:<span id="centerV_span" class="b">0</span> <span style="margin: 0 10px">|</span>U: <span id="centerU_span" class="r">0</span> </div>
+    <div>Press w\s to change <span class="b">V</span> and a\d to change <span class="r">U</span></div>
+    <div>Point V:<span id="centerV_span" class="b">0</span> <span style="margin: 0 10px">|</span>U: <span
+            id="centerU_span" class="r">0</span></div>
 </div>
-
-  <div>
-    <label for="eyeSeparation">eye separation</label>
-    <input type="range" id="eyeSeparation" name="eyeSeparation" min="0.001" max="0.05" step="0.001" value="0.004">
-  </div>
-  <div>
-    <label for="convergence">convergence</label>
-    <input type="range" id="convergence" name="convergence" min="0.1" max="10" step="0.1" value="1">
-  </div>
-  <div>
-    <label for="fov">fov</label>
-    <input type="range" id="fov" name="fov" min="0" max="90" step="1" value="25">
-  </div>
-  <div>
-    <label for="near">near clipping</label>
-    <input type="range" id="near" name="near" min="0" max="11" step="0.001" value="0.01">
-  </div>
+<div class="params">
+    <div>
+        <label for="eyeSeparation">Separation</label>
+        <input type="range" id="eyeSeparation" name="eyeSeparation" min="0.001" max="0.03" step="0.001" value="0.004">
+    </div>
+    <div>
+        <label for="convergence">Convergence</label>
+        <input type="range" id="convergence" name="convergence" min="0.1" max="1.5" step="0.1" value="1">
+    </div>
+    <div>
+        <label for="fov">FOV</label>
+        <input type="range" id="fov" name="fov" min="30" max="50" step="1" value="45">
+    </div>
+    <div>
+        <label for="near">Near clipping</label>
+        <input type="range" id="near" name="near" min="0" max="15" step="0.001" value="0.01">
+    </div>
+</div>
 
 <video src="" width="600" height="600"
-      style="position: absolute;"
-    ></video>
+       style="position: absolute;"
+></video>
 
 <div id="canvas-holder">
-   <canvas width="600" height="600" id="webglcanvas"
-        style="position: absolute;"></canvas>
+    <canvas width="600" height="600" id="webglcanvas"
+            style="position: absolute;"></canvas>
 </div>
 
 
-</body></html>
+</body>
+</html>
