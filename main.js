@@ -6,6 +6,7 @@ let shProgram;                  // A shader program
 let spaceball;                  // A SimpleRotator object that lets the user rotate the view by mouse.
 let lightPositionEl;
 let stereoCamera;
+let accelerometerView;
 
 function deg2rad(angle) {
     return angle * Math.PI / 180;
@@ -111,6 +112,9 @@ function drawLeft() {
 
     let matAccum0 = m4.multiply(rotateToPointZero, modelView );
     let matAccum1 = m4.multiply(translateToPointZero, matAccum0 );
+    if (accelerometerView) {
+      matAccum1 = m4.multiply(matAccum1, accelerometerView);
+    }
 
     const modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
     const normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
@@ -149,6 +153,9 @@ function drawRight() {
 
     let matAccum0 = m4.multiply(rotateToPointZero, modelView );
     let matAccum1 = m4.multiply(translateToPointZero, matAccum0 );
+    if (accelerometerView) {
+      matAccum1 = m4.multiply(matAccum1, accelerometerView);
+    }
 
     const modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
     const normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
@@ -416,6 +423,19 @@ function init() {
     }
 
     draw();
+
+
+    if ("Accelerometer" in window) {
+      const acc = new Accelerometer({ frequency: 60 });
+      acc.addEventListener("reading", () => {
+        const rotation = Math.atan2(acc.x, acc.z);
+        accelerometerView = m4.yRotation(rotation);
+
+        draw();
+      });
+      acc.start();
+
+    }
 }
 
 
