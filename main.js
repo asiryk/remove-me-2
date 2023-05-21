@@ -7,6 +7,7 @@ let spaceball;                  // A SimpleRotator object that lets the user rot
 let N = 20;                     // splines count
 let lightPositionEl;
 let stereoCamera;
+let rotationMatrix;
 
 function deg2rad(angle) {
     return angle * Math.PI / 180;
@@ -114,6 +115,9 @@ function drawLeft() {
 
     let matAccum0 = m4.multiply(rotateToPointZero, modelView );
     let matAccum1 = m4.multiply(translateToPointZero, matAccum0 );
+    if (rotationMatrix) {
+      matAccum1 = m4.multiply(matAccum1, rotationMatrix);
+    }
 
     const modelviewInv = m4.inverse(matAccum1, new Float32Array(16));
     const normalMatrix = m4.transpose(modelviewInv, new Float32Array(16));
@@ -142,6 +146,9 @@ function drawRight() {
 
     let matAccum0 = m4.multiply(rotateToPointZero, modelView );
     let matAccum1 = m4.multiply(translateToPointZero, matAccum0 );
+    if (rotationMatrix) {
+      matAccum1 = m4.multiply(matAccum1, rotationMatrix);
+    }
 
     const modelviewInv = m4.inverse(matAccum1, new Float32Array(16));
     const normalMatrix = m4.transpose(modelviewInv, new Float32Array(16));
@@ -415,6 +422,22 @@ function init() {
     image.onload = () => {
         setTexture(gl, image);
         draw();
+    }
+
+    // init magnetometer
+    if ("Magnetometer" in window) {
+      const magSensor = new Magnetometer({ frequency: 60 });
+      magSensor.addEventListener("reading", () => {
+        const rotationY = Math.atan2(magSensor.x, magSensor.z);
+        const rotationMat = m4.yRotation(rotationY);
+        rotationMatrix = rotationMat;
+
+        draw();
+      });
+      magSensor.start();
+
+    } else {
+      console.error("Magnetometer API is not supported");
     }
 
     draw();
