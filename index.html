@@ -38,6 +38,20 @@
         }
     </style>
 
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function() {
+          navigator.serviceWorker.register("/VR_KPI/worker.js")
+            .then(function(registration) {
+              console.log("Service Worker initialized: ", registration.scope)
+            })
+            .catch(function(error) {
+              console.log("Service Worker registration failed:", error);
+            });
+        });
+      }
+    </script>
+
     <script src="./Utils/trackball-rotator.js"></script>
     <script src="./Utils/m4.js"></script>
     <script src="./shader.gpu"></script>
