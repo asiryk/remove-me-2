@@ -3,6 +3,7 @@
 
 <img alt="pa 2 screen Loading..." height="600" src="imgs/pa2_screen.gif" title="gif" width="400"/>
 <img alt="pa 2 phone Loading..." height="600" src="imgs/pa2_phone.gif" title="gif" width="400"/>
+
 ------
 **PA 1**
 
