@@ -29,27 +29,29 @@
             width: 30%;
         }
 
-        .params > div{
+        .params > div {
             padding: 10px;
         }
 
-        .params > div:hover{
+        .params > div:hover {
             background-color: #ff7c9b;
         }
     </style>
 
     <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", function() {
-          navigator.serviceWorker.register("/VR_KPI/worker.js")
-            .then(function(registration) {
-              console.log("Service Worker initialized: ", registration.scope)
-            })
-            .catch(function(error) {
-              console.log("Service Worker registration failed:", error);
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("/VR_KPI/worker.js")
+                    .then(function (registration) {
+                        console.log(registration)
+                    })
+                    .catch(function (error) {
+                        const ERROR = 'Please, enable Javascript and reload your page'
+                        console.error(ERROR);
+                        alert(ERROR);
+                    });
             });
-        });
-      }
+        }
     </script>
 
     <script src="./Utils/trackball-rotator.js"></script>
