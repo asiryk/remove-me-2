@@ -138,19 +138,19 @@ function drawLeft() {
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length / 3);
 
-    if (accelerometerView) {
-      matAccum1 = m4.multiply(matAccum1, accelerometerView);
-    }
-
-    modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
-    normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
-    modelViewProjection = m4.multiply(projection, matAccum1);
-
-    gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, modelViewProjection);
-
-    gl.uniformMatrix4fv(shProgram.iNormalMatrix, false, normalMatrix);
-
-    gl.drawArrays(gl.TRIANGLE_STRIP, vertices.length / 3, sphereVertices.length / 3);
+    // if (accelerometerView) {
+    //   matAccum1 = m4.multiply(matAccum1, accelerometerView);
+    // }
+    //
+    // modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
+    // normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
+    // modelViewProjection = m4.multiply(projection, matAccum1);
+    //
+    // gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, modelViewProjection);
+    //
+    // gl.uniformMatrix4fv(shProgram.iNormalMatrix, false, normalMatrix);
+    //
+    // gl.drawArrays(gl.TRIANGLE_STRIP, vertices.length / 3, sphereVertices.length / 3);
 }
 
 function drawRight() {
@@ -190,18 +190,18 @@ function drawRight() {
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length / 3);
 
-    if (accelerometerView) {
-      matAccum1 = m4.multiply(matAccum1, accelerometerView);
-    }
-
-    modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
-    normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
-    modelViewProjection = m4.multiply(projection, matAccum1);
-
-    gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, modelViewProjection);
-    gl.uniformMatrix4fv(shProgram.iNormalMatrix, false, normalMatrix);
-
-    gl.drawArrays(gl.TRIANGLE_STRIP, vertices.length / 3, sphereVertices.length / 3);
+    // if (accelerometerView) {
+    //   matAccum1 = m4.multiply(matAccum1, accelerometerView);
+    // }
+    //
+    // modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
+    // normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
+    // modelViewProjection = m4.multiply(projection, matAccum1);
+    //
+    // gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, modelViewProjection);
+    // gl.uniformMatrix4fv(shProgram.iNormalMatrix, false, normalMatrix);
+    //
+    // gl.drawArrays(gl.TRIANGLE_STRIP, vertices.length / 3, sphereVertices.length / 3);
 }
 
 /* Draws a colored cube, along with a set of coordinate axes.
