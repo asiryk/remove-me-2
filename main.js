@@ -476,7 +476,7 @@ function init() {
 async function initAudio() {
   await new Promise(resolve => setTimeout(resolve, 3000));
   const audioContext = new AudioContext();
-  const decodedAudioData = await fetch("/music.mp3")
+  const decodedAudioData = await fetch("/VR_KPI/music.mp3")
     .then(response => response.arrayBuffer())
     .then(audioData => audioContext.decodeAudioData(audioData));
 
