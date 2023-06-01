@@ -458,14 +458,21 @@ function init() {
     draw();
 
     if ("Accelerometer" in window) {
-      const windowAccelerometer = new Accelerometer({ frequency: 60 });
+      const accelerometer = new Accelerometer({ frequency: 60 });
+      accelerometer.addEventListener("reading", () => {
+        const rotationX = Math.atan2(accelerometer.y, accelerometer.z);
+        const rotationY = Math.atan2(accelerometer.x, accelerometer.z);
+        const rotationZ = Math.atan2(accelerometer.y, accelerometer.x);
+        const mX = m4.xRotation(rotationX);
+        const mY = m4.yRotation(rotationY);
+        const mZ = m4.zRotation(rotationZ);
+        const acc = m4.multiply(mX, mY);
+        accelerometerView = m4.multiply(acc, mZ);
 
-      windowAccelerometer.addEventListener("reading", () => {
-        accelerometerView = m4.yRotation(Math.atan2(windowAccelerometer.x, windowAccelerometer.z));
         draw();
       });
+      accelerometer.start();
 
-      windowAccelerometer.start();
     }
 }
 
