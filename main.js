@@ -466,8 +466,42 @@ function init() {
         draw();
       });
       accelerometer.start();
-
     }
+
+  initAudio();
+  initCheckBox();
+
+}
+
+async function initAudio() {
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  const audioContext = new AudioContext();
+  const decodedAudioData = await fetch("/music.mp3")
+    .then(response => response.arrayBuffer())
+    .then(audioData => audioContext.decodeAudioData(audioData));
+
+  const source = audioContext.createBufferSource();
+  source.buffer = decodedAudioData;
+  source.connect(audioContext.destination);
+  source.start();
+  const panner = audioContext.createPanner();
+  const volume = audioContext.createGain();
+  volume.connect(panner);
+  const highpass = audioContext.createBiquadFilter();
+  highpass.type = "lowshelf";
+  highpass.frequency.value = 500;
+
+  audio.panner = panner;
+  audio.context = audioContext;
+  audio.filter = highpass;
+  audio.source = source;
+  source.connect(highpass);
+
+  window.setAudioPosition = (x, y, z) => {
+    panner.positionX.value = x;
+    panner.positionY.value = y;
+    panner.positionZ.value = z;
+  }
 }
 
 function createSphereData() {
@@ -506,7 +540,17 @@ function createSphereData() {
   return { sphereVertices, sphereUvs };
 }
 
+function initCheckBox() {
+  const toggle = document.querySelector("#toggleFilter");
 
+  toggle.onchange = e => {
+    if (e.target.checked) {
+      audio.filter.connect(audio.context.destination);
+    } else {
+      audio.filter.disconnect();
+    }
+  }
+}
 function validateMin(value, minValue = 0)
 {
     return value < minValue ? minValue : value;
