@@ -113,6 +113,9 @@ function drawLeft() {
 
     let matAccum0 = m4.multiply(rotateToPointZero, modelView );
     let matAccum1 = m4.multiply(translateToPointZero, matAccum0 );
+    if (accelerometerView) {
+      matAccum1 = m4.multiply(matAccum1, accelerometerView);
+    }
 
     let modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
     let normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
@@ -165,6 +168,9 @@ function drawRight() {
 
     let matAccum0 = m4.multiply(rotateToPointZero, modelView );
     let matAccum1 = m4.multiply(translateToPointZero, matAccum0 );
+    if (accelerometerView) {
+      matAccum1 = m4.multiply(matAccum1, accelerometerView);
+    }
 
     let modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
     let normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
