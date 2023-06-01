@@ -8,17 +8,20 @@ let lightPositionEl;
 let stereoCamera;
 let accelerometerView;
 
+let sphereVertices, sphereUvs;
+let vertices, uvs;
+
+let audio = {};
+
 function deg2rad(angle) {
     return angle * Math.PI / 180;
 }
 
 
 // Constructor
-function Model(name) {
-    this.name = name;
-    this.count = 0;
+function Model() {
 
-    this.BufferData = function (vertices, uvs) {
+    this.BufferData = function () {
         const vBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STREAM_DRAW);
@@ -30,12 +33,10 @@ function Model(name) {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STREAM_DRAW);
         gl.enableVertexAttribArray(shProgram.iTexCoord);
         gl.vertexAttribPointer(shProgram.iTexCoord, 2, gl.FLOAT, false, 0, 0);
-
-        this.count = vertices.length / 3;
     }
 
     this.Draw = function () {
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.count);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length / 3);
     }
 }
 
@@ -270,8 +271,14 @@ function initGL() {
     shProgram.iTexCenter = gl.getUniformLocation(prog, 'texCenter');
 
     surface = new Model('Surface');
-    const {vertices, uvs} = CreateSurfaceData();
-    surface.BufferData(vertices, uvs);
+    const data =  CreateSurfaceData();
+    const sData = createSphereData();
+    vertices = data.vertices;
+    uvs = data.uvs;
+    sphereVertices = sData.sphereVertices;
+    sphereUvs = sData.sphereUvs;
+
+    surface.BufferData();
 
     const ap = gl.canvas.width / gl.canvas.height;
 
@@ -346,16 +353,16 @@ function init() {
         return;
     }
 
-    const videoElement = document.querySelector('video');
-
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-            videoElement.srcObject = stream;
-            videoElement.play();
-        })
-        .catch(error => {
-            console.error('Error accessing user media', error);
-        });
+    // const videoElement = document.querySelector('video');
+    //
+    // navigator.mediaDevices.getUserMedia({ video: true })
+    //     .then(stream => {
+    //         videoElement.srcObject = stream;
+    //         videoElement.play();
+    //     })
+    //     .catch(error => {
+    //         console.error('Error accessing user media', error);
+    //     });
 
     spaceball = new TrackballRotator(canvas, draw, 0);
 
@@ -430,6 +437,42 @@ function init() {
 
       windowAccelerometer.start();
     }
+}
+
+function createSphereData() {
+  const radius = 0.15;
+  const horizontalPieces = 16;
+  const verticalPieces = 16;
+  const sphereVertices = [];
+  const sphereUvs = [];
+
+  for(let stackNumber = 0; stackNumber <= verticalPieces; stackNumber++) {
+    const theta = stackNumber * Math.PI / verticalPieces;
+    const nextTheta = (stackNumber + 1) * Math.PI / verticalPieces;
+
+    for(let sliceNumber = 0; sliceNumber <= horizontalPieces; sliceNumber++) {
+      const phi = sliceNumber * 2 * Math.PI / horizontalPieces;
+      const nextPhi = (sliceNumber + 1) * 2 * Math.PI / horizontalPieces;
+      const x1 = radius * Math.sin(theta) * Math.cos(phi);
+      const y1 = radius * Math.cos(theta);
+      const z1 = radius * Math.sin(theta) * Math.sin(phi);
+      const u1 = sliceNumber / horizontalPieces;
+      const v1 = stackNumber / verticalPieces;
+      const x2 = radius * Math.sin(nextTheta) * Math.cos(nextPhi);
+      const y2 = radius * Math.cos(nextTheta);
+      const z2 = radius * Math.sin(nextTheta) * Math.sin(nextPhi);
+      const u2 = (sliceNumber + 1) / horizontalPieces;
+      const v2 = (stackNumber + 1) / verticalPieces;
+
+      const offset = 1.2;
+      sphereVertices.push(x1 + offset, y1 + offset, z1);
+      sphereVertices.push(x2 + offset, y2 + offset, z2);
+      sphereUvs.push(u1, v1);
+      sphereUvs.push(u2, v2);
+    }
+  }
+
+  return { sphereVertices, sphereUvs };
 }
 
 
