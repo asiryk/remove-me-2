@@ -21,22 +21,22 @@ function deg2rad(angle) {
 // Constructor
 function Model() {
 
+  
     this.BufferData = function () {
+        const allVertices = vertices.concat(sphereVertices);
+        const allUvs = uvs.concat(sphereUvs);
+        const allBuffer = allVertices.concat(allUvs);
+
+        // vertices
         const vBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STREAM_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(allBuffer), gl.STREAM_DRAW);
+
         gl.enableVertexAttribArray(shProgram.iAttribVertex);
         gl.vertexAttribPointer(shProgram.iAttribVertex, 3, gl.FLOAT, false, 0, 0);
 
-        const tBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, tBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STREAM_DRAW);
         gl.enableVertexAttribArray(shProgram.iTexCoord);
-        gl.vertexAttribPointer(shProgram.iTexCoord, 2, gl.FLOAT, false, 0, 0);
-    }
-
-    this.Draw = function () {
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length / 3);
+        gl.vertexAttribPointer(shProgram.iTexCoord, 2, gl.FLOAT, false, 0, allVertices * 4);
     }
 }
 
@@ -113,10 +113,9 @@ function drawLeft() {
 
     let matAccum0 = m4.multiply(rotateToPointZero, modelView );
     let matAccum1 = m4.multiply(translateToPointZero, matAccum0 );
-    accelerometerView  ? matAccum1 = m4.multiply(matAccum1, accelerometerView) : false;
 
-    const modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
-    const normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
+    let modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
+    let normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
 
     /* Multiply the projection matrix times the modelview matrix to give the
        combined transformation matrix, and send that to the shader program. */
@@ -137,7 +136,21 @@ function drawLeft() {
     /* Draw the six faces of a cube, with different colors. */
     gl.uniform4fv(shProgram.iColor, [0,1,1,1] );
 
-    surface.Draw();
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length / 3);
+
+    if (accelerometerView) {
+      matAccum1 = m4.multiply(matAccum1, accelerometerView);
+    }
+
+    modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
+    normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
+    modelViewProjection = m4.multiply(projection, matAccum1);
+
+    gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, modelViewProjection);
+
+    gl.uniformMatrix4fv(shProgram.iNormalMatrix, false, normalMatrix);
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, vertices.length / 3, sphereVertices.length / 3);
 }
 
 function drawRight() {
@@ -152,10 +165,9 @@ function drawRight() {
 
     let matAccum0 = m4.multiply(rotateToPointZero, modelView );
     let matAccum1 = m4.multiply(translateToPointZero, matAccum0 );
-    accelerometerView ? matAccum1 = m4.multiply(matAccum1, accelerometerView) : false;
 
-    const modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
-    const normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
+    let modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
+    let normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
 
     /* Multiply the projection matrix times the modelview matrix to give the
        combined transformation matrix, and send that to the shader program. */
@@ -176,9 +188,21 @@ function drawRight() {
     /* Draw the six faces of a cube, with different colors. */
     gl.uniform4fv(shProgram.iColor, [0,1,1,1] );
 
-    surface.Draw();
-}
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length / 3);
 
+    if (accelerometerView) {
+      matAccum1 = m4.multiply(matAccum1, accelerometerView);
+    }
+
+    modelViewInv = m4.inverse(matAccum1, new Float32Array(16));
+    normalMatrix = m4.transpose(modelViewInv, new Float32Array(16));
+    modelViewProjection = m4.multiply(projection, matAccum1);
+
+    gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, modelViewProjection);
+    gl.uniformMatrix4fv(shProgram.iNormalMatrix, false, normalMatrix);
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, vertices.length / 3, sphereVertices.length / 3);
+}
 
 /* Draws a colored cube, along with a set of coordinate axes.
  * (Note that the use of the above drawPrimitive function is not an efficient
@@ -440,7 +464,7 @@ function init() {
 }
 
 function createSphereData() {
-  const radius = 0.15;
+  const radius = 0.2;
   const horizontalPieces = 16;
   const verticalPieces = 16;
   const sphereVertices = [];
@@ -464,9 +488,9 @@ function createSphereData() {
       const u2 = (sliceNumber + 1) / horizontalPieces;
       const v2 = (stackNumber + 1) / verticalPieces;
 
-      const offset = 1.2;
-      sphereVertices.push(x1 + offset, y1 + offset, z1);
-      sphereVertices.push(x2 + offset, y2 + offset, z2);
+      const offset = 1.4;
+      sphereVertices.push(x1 + offset, y1, z1 + offset);
+      sphereVertices.push(x2 + offset, y2, z2 + offset);
       sphereUvs.push(u1, v1);
       sphereUvs.push(u2, v2);
     }
